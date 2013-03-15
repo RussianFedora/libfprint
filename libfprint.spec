@@ -70,6 +70,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/pkgconfig/%{name}.pc
 
 %changelog
+* Fri Mar 15 2013 Arkady L. Shane <ashejn@russianfedora.ru> 0.5.0-1.R
+- apply patch to support UPEK 147e:2020
+
 * Mon Dec 03 2012 Bastien Nocera <bnocera@redhat.com> 0.5.0-1
 - Update to 0.5.0
 - Re-add not useless udev rules
