@@ -4,5 +4,5 @@ libfprint
 * Название:                   libfprint
 * Мейнтейнер:                 Аркадий Шейн
 * Репозиторий:                russianfedora-fixes
-* Почему не в апстриме:       awaiting fixing https://bugzilla.redhat.com/show_bug.cgi?id=913359
-* Комментарий:                fix UPEK 147e:202
+* Почему не в апстриме:       https://gitlab.freedesktop.org/libfprint/libfprint/issues/54
+* Комментарий:                fix Validity Sensors 138a:0090
