@@ -1,75 +1,147 @@
 Name:           libfprint
-Version:        0.5.0
-Release:        1%{?dist}
+Version:        1.0
+Release:        1%{?dist}.R
 Summary:        Toolkit for fingerprint scanner
 
-Group:          System Environment/Libraries
 License:        LGPLv2+
 URL:            http://www.freedesktop.org/wiki/Software/fprint/libfprint
-Source0:        http://freedesktop.org/~hadess/%{name}-%{version}.tar.xz
-# Fix 147e:2020 UPEK fingerprint support
-Patch0:		libfprint-147e-2020-support.patch
+Source0:        https://gitlab.freedesktop.org/libfprint/libfprint/uploads/a6084497941324538aefbdf7b954f1e9/%{name}-%{version}.tar.xz
 
-BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+Patch0:		vfs0090.patch
+
 ExcludeArch:    s390 s390x
 
-BuildRequires:  libusb1-devel glib2-devel gtk2-devel nss-devel
-BuildRequires:  doxygen autoconf automake libtool
+BuildRequires:  meson
+BuildRequires:  gcc
+BuildRequires:  gcc-c++
+BuildRequires:  git
+BuildRequires:  pkgconfig(glib-2.0) >= 2.28
+BuildRequires:  pkgconfig(libusb-1.0) >= 0.9.1
+BuildRequires:  pkgconfig(nss)
+BuildRequires:  pkgconfig(openssl)
+BuildRequires:  pkgconfig(pixman-1)
+BuildRequires:  gtk-doc
+# For the udev.pc to install the rules
+BuildRequires:  systemd
 
 %description
 libfprint offers support for consumer fingerprint reader devices.
 
 %package        devel
 Summary:        Development files for %{name}
-Group:          Development/Libraries
-Requires:       %{name} = %{version}-%{release}
-Requires:       pkgconfig
-
+Requires:       %{name}%{?_isa} = %{version}-%{release}
 
 %description    devel
 The %{name}-devel package contains libraries and header files for
 developing applications that use %{name}.
 
-
 %prep
-%setup -q
-%patch0 -p1 -b .147e-2020-support
+%autosetup -S git
 
 %build
-%configure --disable-static 
-make %{?_smp_mflags}
-pushd doc
-make docs
-popd
+%meson -Dx11-examples=false
+%meson_build
 
 %install
-rm -rf $RPM_BUILD_ROOT
-make install DESTDIR=$RPM_BUILD_ROOT
-find $RPM_BUILD_ROOT -name '*.la' -exec rm -f {} ';'
+%meson_install
 
-%clean
-rm -rf $RPM_BUILD_ROOT
-
-
-%post -p /sbin/ldconfig
-
-%postun -p /sbin/ldconfig
-
+%ldconfig_scriptlets
 
 %files
-%defattr(-,root,root,-)
-%doc COPYING INSTALL NEWS TODO THANKS AUTHORS README
+%license COPYING
+%doc NEWS TODO THANKS AUTHORS README
 %{_libdir}/*.so.*
-%{_prefix}/lib/udev/rules.d/60-fprint-autosuspend.rules
+%{_udevrulesdir}/60-fprint-autosuspend.rules
 
 %files devel
-%defattr(-,root,root,-)
-%doc HACKING doc/html
+%doc HACKING.md
 %{_includedir}/*
 %{_libdir}/*.so
 %{_libdir}/pkgconfig/%{name}.pc
+%{_datadir}/gtk-doc/html/libfprint/
 
 %changelog
+* Tue Aug 27 2019 Arkady L. Shane <ashejn@russianfedora.pro> - 1.0-1.R
+- apply vfs0090 patch to support 0090 valid sensors devices
+
+* Wed Aug 14 2019 Benjamin Berg <bberg@redhat.com> - 1.0-1
++ libfprint-1.0-1
+- Update to 1.0
+
+* Fri Feb 01 2019 Fedora Release Engineering <releng@fedoraproject.org> - 0.8.2-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_30_Mass_Rebuild
+
+* Fri Jul 20 2018 Bastien Nocera <bnocera@redhat.com> - 0.8.2-2
++ libfprint-0.8.2-2
+- Fix build with newer meson (#1604585)
+
+* Tue Jul 17 2018 Bastien Nocera <bnocera@redhat.com> - 0.8.2-1
++ libfprint-0.8.2-1
+- Update to 0.8.2
+- Add required gcc and gcc-c++ BR
+
+* Fri Jul 13 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.8.1-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_29_Mass_Rebuild
+
+* Tue Jun 12 2018 Bastien Nocera <bnocera@redhat.com> - 0.8.1-1
++ libfprint-0.8.1-1
+- Update to 0.8.1 to fix the build
+
+* Tue Jun 12 2018 Bastien Nocera <bnocera@redhat.com> - 0.8.0-1
++ libfprint-0.8.0-1
+- Update to 0.8.0
+- Port to meson, gtk-doc
+
+* Wed Feb 07 2018 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.0-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_28_Mass_Rebuild
+
+* Sat Feb 03 2018 Igor Gnatenko <ignatenkobrain@fedoraproject.org> - 0.7.0-4
+- Switch to %%ldconfig_scriptlets
+
+* Thu Aug 03 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Binutils_Mass_Rebuild
+
+* Wed Jul 26 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.7.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_27_Mass_Rebuild
+
+* Mon May 15 2017 Bastien Nocera <bnocera@redhat.com> - 0.7.0-1
++ libfprint-0.7.0-1
+- Update to 0.7.0
+
+* Fri Feb 10 2017 Fedora Release Engineering <releng@fedoraproject.org> - 0.6.0-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_26_Mass_Rebuild
+
+* Thu Feb 04 2016 Fedora Release Engineering <releng@fedoraproject.org> - 0.6.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_24_Mass_Rebuild
+
+* Wed Jun 17 2015 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.6.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_23_Mass_Rebuild
+
+* Tue Feb 03 2015 Bastien Nocera <bnocera@redhat.com> 0.6.0-1
+- Update to 0.6.0
+
+* Wed Dec 17 2014 Rex Dieter <rdieter@fedoraproject.org> - 0.5.1-5
+- error opening ATTR{/sys/devices/pci0000:00/0000:00:1a.0/usb1/1-1/1-1.3/1-1.3:1.0/power/control} for writing (#950205)
+- %%build: --disable-silent-rules
+
+* Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.1-4
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
+
+* Sat Jun 07 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.1-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_21_Mass_Rebuild
+
+* Thu Jan 16 2014 Ville Skyttä <ville.skytta@iki.fi> - 0.5.1-2
+- Drop INSTALL from docs.
+
+* Sun Aug 11 2013 Bastien Nocera <bnocera@redhat.com> 0.5.1-1
+- Update to 0.5.1
+
+* Sat Aug 03 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.0-3
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_20_Mass_Rebuild
+
+* Thu Feb 14 2013 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 0.5.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_19_Mass_Rebuild
+
 * Mon Dec 03 2012 Bastien Nocera <bnocera@redhat.com> 0.5.0-1
 - Update to 0.5.0
 - Re-add not useless udev rules
